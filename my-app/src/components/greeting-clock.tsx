@@ -10,17 +10,25 @@ function getGreeting(hours: number): Greeting {
   return "Good Evening";
 }
 
-function pad2(n: number) {
-  return String(n).padStart(2, "0");
-}
-
 function formatTime(d: Date) {
-  const hours24 = d.getHours();
-  const hours12 = hours24 % 12 || 12;
-  const minutes = pad2(d.getMinutes());
-  const seconds = pad2(d.getSeconds());
-  const ampm = hours24 >= 12 ? "PM" : "AM";
-  return `${hours12}:${minutes}:${seconds} ${ampm}`;
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  const parts = new Intl.DateTimeFormat(undefined, {
+    timeZone,
+    hour: "numeric",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+    timeZoneName: "short",
+  }).formatToParts(d);
+
+  const hour = parts.find((p) => p.type === "hour")?.value ?? "";
+  const minute = parts.find((p) => p.type === "minute")?.value ?? "";
+  const second = parts.find((p) => p.type === "second")?.value ?? "";
+  const dayPeriod = parts.find((p) => p.type === "dayPeriod")?.value ?? "";
+  const tz = parts.find((p) => p.type === "timeZoneName")?.value ?? "";
+
+  return `${hour}:${minute}:${second} ${dayPeriod} (${tz})`;
 }
 
 export default function GreetingClock() {
