@@ -14,30 +14,33 @@ function pad2(n: number) {
   return String(n).padStart(2, "0");
 }
 
-function formatDateTime(d: Date) {
+function formatTime(d: Date) {
   const hours24 = d.getHours();
   const hours12 = hours24 % 12 || 12;
   const minutes = pad2(d.getMinutes());
   const seconds = pad2(d.getSeconds());
   const ampm = hours24 >= 12 ? "PM" : "AM";
-
-  return {
-    timePart: `${hours12}:${minutes}:${seconds} ${ampm}`,
-  };
+  return `${hours12}:${minutes}:${seconds} ${ampm}`;
 }
 
 export default function GreetingClock() {
-  const [timeNow, setTimeNow] = useState<Date>(() => new Date());
+  const [timeNow, setTimeNow] = useState<Date | null>(null);
 
   useEffect(() => {
-    const id = window.setInterval(() => {
-      setTimeNow(new Date());
-    }, 1000);
+    const tick = () => setTimeNow(new Date());
 
-    return () => window.clearInterval(id);
+    const t0 = window.setTimeout(tick, 0);
+    const id = window.setInterval(tick, 1000);
+
+    return () => {
+      window.clearTimeout(t0);
+      window.clearInterval(id);
+    };
   }, []);
 
   const view = useMemo(() => {
+    if (!timeNow) return null;
+
     const greeting = getGreeting(timeNow.getHours());
 
     const month = timeNow.toLocaleDateString(undefined, { month: "long" });
@@ -46,18 +49,20 @@ export default function GreetingClock() {
     const year = timeNow.getFullYear();
     const customDate = `${month} ${day}, ${year} (${weekday})`;
 
-    const { timePart } = formatDateTime(timeNow);
+    const timePart = formatTime(timeNow);
 
     return { greeting, customDate, timePart };
   }, [timeNow]);
 
   return (
     <div className="inline-flex items-center gap-3 rounded-full bg-white/60 px-4 py-2 shadow-md">
-      <span className="text-secondary font-semibold">{view.greeting}</span>
+      <span className="text-secondary font-semibold">
+        {view?.greeting ?? "Hello"}
+      </span>
       <span className="text-foreground/40">•</span>
-      <span>{view.customDate}</span>
+      <span>{view?.customDate ?? "—"}</span>
       <span>·</span>
-      <span>{view.timePart}</span>
+      <span>{view?.timePart ?? "—"}</span>
     </div>
   );
 }
