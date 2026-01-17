@@ -1,11 +1,8 @@
 export default function Home() {
   return (
     <div className="min-h-screen">
-      <header className="p-3 bg-primary-foreground border-b border-border">
-        Home
-      </header>
       <div className="flex flex-col gap-5 text-center items-center justify-center px-20 mt-20">
-        <h1 className="text-primary">Welcome to a Happy Place!</h1>
+        <h1 className="text-primary">Welcome to Happy Blue Joy!</h1>
         <p>
           Step into our friendly world filled with heartwarming games and
           delightful adventures. Make yourself at Home!
