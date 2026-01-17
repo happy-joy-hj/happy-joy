@@ -1,21 +1,30 @@
+import GreetingClock from "@/components/greeting-clock";
+
 export default function Home() {
   return (
-    <div className="min-h-screen">
-      <div className="flex flex-col gap-5 text-center items-center justify-center px-20 mt-20">
+    <main className="container flex flex-col gap-24 mt-16">
+      <section className="flex flex-col gap-7 text-center items-center justify-center">
         <h1 className="text-primary">Welcome to Happy Blue Joy!</h1>
-        <p>
-          Step into our friendly world filled with heartwarming games and
-          delightful adventures. Make yourself at Home!
-        </p>
-        <div className="flex flex-row gap-5">
-          <button className="text-secondary-foreground bg-secondary px-3 py-2">
-            Get Started
-          </button>
-          <button className="bg-accent text-secondary-foreground">
-            Learn More
-          </button>
+        <p>Quick cozy games to help you relax and smile.</p>
+        <GreetingClock />
+      </section>
+      <section className="flex flex-col text-center gap-7">
+        <h2 className="text-secondary">Let&apos;s Play Something Now</h2>
+        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {["Friend Quest", "Coming Soon"].map((title) => (
+            <div
+              key={title}
+              className="rounded-2xl bg-white/70 p-6 shadow-sm flex flex-col gap-4 justify-center"
+            >
+              <h4>{title}</h4>
+              <p>A quick, cozy mini game to brighten your day.</p>
+              <button className="bg-accent text-white hover:opacity-90">
+                Play
+              </button>
+            </div>
+          ))}
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
