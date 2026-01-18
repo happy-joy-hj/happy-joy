@@ -1,5 +1,6 @@
 import GameSection from "@/components/game-section";
 import GreetingClock from "@/components/greeting-clock";
+import { games } from "@/lib/games";
 
 export default function Home() {
   return (
@@ -9,7 +10,9 @@ export default function Home() {
         <p>Quick cozy games to help you relax and smile.</p>
         <GreetingClock />
       </section>
-      <GameSection />
+      <div className="flex items-center justify-center">
+        <GameSection games={games} limit={4} />
+      </div>
     </div>
   );
 }

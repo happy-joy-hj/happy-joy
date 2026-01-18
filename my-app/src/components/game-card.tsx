@@ -1,14 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Game } from "@/lib/types";
 
-type GameCardProps = {
-  title: string;
-  description: string;
-  href: string;
-  img?: string;
-  label?: string;
-  disabled?: boolean;
-};
+type GameCardProps = Game;
 
 export default function GameCard({
   title,

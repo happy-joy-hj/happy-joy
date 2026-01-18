@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 
 const navItems = [
   { label: "Home", href: "/" },
-  { label: "Games", href: "/hello-friend" },
+  { label: "Games", href: "/games" },
 ];
 
 export default function Navbar() {
