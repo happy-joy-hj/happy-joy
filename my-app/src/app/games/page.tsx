@@ -1,5 +1,5 @@
 import GameSection from "@/components/game-section";
-import { games } from "@/lib/games";
+import { games } from "@/lib/data/games";
 
 export default function Page() {
   return (

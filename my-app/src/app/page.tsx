@@ -1,6 +1,6 @@
 import GameSection from "@/components/game-section";
 import GreetingClock from "@/components/greeting-clock";
-import { games } from "@/lib/games";
+import { games } from "@/lib/data/games";
 
 export default function Home() {
   return (
