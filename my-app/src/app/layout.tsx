@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Happy Blue Joy",
-  description: "Welcome to home page of Happy Blue Joy!",
+  title: "Happy Joy",
+  description: "Welcome to Happy Joy project!",
 };
 
 export default function RootLayout({
