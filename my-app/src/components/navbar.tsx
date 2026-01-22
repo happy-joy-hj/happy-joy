@@ -17,9 +17,9 @@ export default function Navbar() {
       <div className="container flex items-center justify-between max-w-">
         <Link href="/">
           <Image
-            src="/images/happy-logo.png"
+            src="/images/hj-logo.png"
             alt="logo"
-            width={100}
+            width={60}
             height={0}
             priority
           />

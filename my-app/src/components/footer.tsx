@@ -6,7 +6,7 @@ export default function Footer() {
       <span>
         <i className="fa-regular fa-copyright" /> {new Date().getFullYear()}
       </span>
-      <span>Happy Blue Joy</span>
+      <span>Happy Joy</span>
     </footer>
   );
 }
