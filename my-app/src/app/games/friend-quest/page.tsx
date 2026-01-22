@@ -94,7 +94,7 @@ export default function Page() {
   const showNoText = noScale >= 0.05;
 
   return (
-    <div className="container flex flex-col gap-8 md:gap-12 justify-center items-center text-center">
+    <div className="flex flex-col gap-8 md:gap-12 justify-center items-center text-center">
       <h2 className="text-primary">Quest: Be my friend. Accept?</h2>
 
       <section
