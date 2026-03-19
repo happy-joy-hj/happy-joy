@@ -10,11 +10,13 @@ import { useShake } from "@/hooks/useShake";
 
 import {
   clamp,
+  getFinalContent,
   getNoIndexFromClicks,
   getNoScaleFromClicks,
+  getStageContent,
   getVibe,
 } from "@/lib/friend-quest";
-import type { Phase } from "@/lib/friend-quest";
+import type { FinalContent, Phase } from "@/lib/friend-quest";
 
 type FaAnimStyle = CSSProperties & {
   ["--fa-animation-duration"]?: string;
@@ -63,6 +65,8 @@ export default function Page() {
   };
 
   const vibe = getVibe(phase, noClicks);
+  const stageContent = getStageContent(phase, noClicks);
+  const [finalContent, setFinalContent] = useState<FinalContent | null>(null);
 
   const imageSrc =
     phase === "final"
@@ -72,7 +76,7 @@ export default function Page() {
         : "/images/friend-quest/initial.png";
 
   const showButtons = phase !== "final" && !isAccepting;
-  const showNoText = noScale >= 0.05;
+  const showNoText = noScale >= 0.05 && stageContent.noText.length > 0;
 
   const yesIcon =
     noClicks >= 10 ? "fa-regular fa-face-smile-beam" : "fa-solid fa-heart";
@@ -91,6 +95,7 @@ export default function Page() {
     setIsAccepting(true);
 
     yesTimeoutRef.current = setTimeout(() => {
+      setFinalContent(getFinalContent(noClicks));
       setPhase("final");
       setIsAccepting(false);
       yesTimeoutRef.current = null;
@@ -123,36 +128,25 @@ export default function Page() {
     setNoClicks(0);
     setIsAccepting(false);
     setNoPos({ x: 0, y: 0 });
+    setFinalContent(null);
     clearPops();
   }
 
   return (
-    <div className="container flex flex-col gap-8 md:gap-12 justify-center items-center text-center">
+    <div className="container flex flex-col items-center justify-center gap-8 text-center md:gap-12">
       <h2 className="text-primary">Friend Quest: Will you be my friend?</h2>
 
       <section
         ref={sectionRef}
         onAnimationEnd={onAnimationEnd}
         className={[
-          "relative rounded-2xl bg-white/80 shadow-sm flex flex-col gap-4 justify-center items-center text-center size-full max-w-5xl",
-          "h-118.75 md:h-125 overflow-hidden",
+          "relative flex size-full max-w-5xl flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl bg-white/80 text-center shadow-sm",
+          "h-118.75 md:h-125",
           isShaking ? "cozy-shake" : "",
         ].join(" ")}
       >
-        <div
-          className="px-4 py-2 rounded-2xl bg-white/70 shadow-sm inline-flex items-center gap-2"
-          aria-live="polite"
-        >
-          <i
-            aria-hidden="true"
-            className={`${vibe.icon} ${vibe.anim}`}
-            style={faAnimStyle}
-          />
-          <span className="text-sm md:text-base">{vibe.text}</span>
-        </div>
-
         <div className="w-full max-w-md px-4">
-          <div className="flex items-center justify-between text-xs opacity-80 mb-1">
+          <div className="mb-1 flex items-center justify-between text-xs opacity-80">
             <span className="inline-flex items-center gap-2">
               <i
                 aria-hidden="true"
@@ -164,7 +158,7 @@ export default function Page() {
             <span>{Math.round(meter * 100)}%</span>
           </div>
 
-          <div className="h-2 rounded-full bg-black/10 overflow-hidden">
+          <div className="h-2 overflow-hidden rounded-full bg-black/10">
             <div
               className={`h-full bg-primary ${
                 phase === "final" ? "" : "transition-all duration-300"
@@ -174,12 +168,24 @@ export default function Page() {
           </div>
         </div>
 
+        <div
+          className="inline-flex items-center gap-2 rounded-2xl bg-white/70 px-4 py-2 shadow-sm"
+          aria-live="polite"
+        >
+          <i
+            aria-hidden="true"
+            className={`${vibe.icon} ${vibe.anim}`}
+            style={faAnimStyle}
+          />
+          <span className="text-sm md:text-base">{stageContent.dialogue}</span>
+        </div>
+
         <Image
           src={imageSrc}
-          alt="Friend Quest image"
+          alt="Friend Quest mascot reaction"
           width={300}
           height={300}
-          className="h-auto w-50 md:w-72 select-none"
+          className="h-auto w-45 select-none lg:w-65"
           draggable={false}
           priority
         />
@@ -188,7 +194,7 @@ export default function Page() {
           <i
             key={p.id}
             aria-hidden="true"
-            className={`${p.iconClass} cozy-pop absolute pointer-events-none select-none`}
+            className={`${p.iconClass} cozy-pop pointer-events-none absolute select-none`}
             style={{
               left: p.x,
               top: p.y,
@@ -206,7 +212,7 @@ export default function Page() {
                   type="button"
                   onClick={handleYes}
                   style={{ width: BASE_W, height: BASE_H }}
-                  className="rounded-full bg-primary text-white grid place-items-center active:scale-95 transition-transform duration-150"
+                  className="grid place-items-center rounded-full bg-primary text-white transition-transform duration-150 active:scale-95"
                 >
                   <span className="inline-flex items-center gap-2">
                     <i
@@ -214,7 +220,7 @@ export default function Page() {
                       className="fa-solid fa-heart fa-beat"
                       style={faAnimStyle}
                     />
-                    Yes
+                    {stageContent.yesText}
                   </span>
                 </button>
 
@@ -222,7 +228,7 @@ export default function Page() {
                   type="button"
                   onClick={handleNo}
                   style={{ width: BASE_W, height: BASE_H }}
-                  className="rounded-full bg-secondary text-white grid place-items-center active:scale-95 transition-transform duration-150"
+                  className="grid place-items-center rounded-full bg-secondary text-white transition-transform duration-150 active:scale-95"
                 >
                   <span className="inline-flex items-center gap-2">
                     <i
@@ -230,7 +236,7 @@ export default function Page() {
                       className="fa-solid fa-star fa-fade"
                       style={faAnimStyle}
                     />
-                    No
+                    {stageContent.noText}
                   </span>
                 </button>
               </div>
@@ -246,7 +252,7 @@ export default function Page() {
                     height: BASE_H,
                     transform: `scale(${yesScale})`,
                   }}
-                  className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-primary text-white grid place-items-center origin-center transition-transform duration-200 ease-out active:scale-[0.98]"
+                  className="absolute bottom-6 left-1/2 grid origin-center -translate-x-1/2 place-items-center rounded-full bg-primary text-white transition-transform duration-200 ease-out active:scale-[0.98]"
                 >
                   <span className="inline-flex items-center gap-2">
                     <i
@@ -254,7 +260,7 @@ export default function Page() {
                       className={`${yesIcon} fa-beat-fade`}
                       style={faAnimStyle}
                     />
-                    Yes
+                    {stageContent.yesText}
                   </span>
                 </button>
 
@@ -269,7 +275,7 @@ export default function Page() {
                     top: noPos.y,
                     transform: `scale(${noScale})`,
                   }}
-                  className="absolute rounded-full bg-secondary text-white grid place-items-center origin-top-left transition-all duration-200 ease-out active:scale-95"
+                  className="absolute grid origin-top-left place-items-center rounded-full bg-secondary text-white transition-all duration-200 ease-out active:scale-95"
                 >
                   <span className="inline-flex items-center gap-2">
                     <i
@@ -277,7 +283,7 @@ export default function Page() {
                       className={`${noIcon} fa-fade`}
                       style={faAnimStyle}
                     />
-                    {showNoText ? "No" : ""}
+                    {showNoText ? stageContent.noText : ""}
                   </span>
                 </button>
               </>
@@ -285,25 +291,34 @@ export default function Page() {
           </>
         )}
 
-        {phase === "final" && (
-          <div className="mt-1 text-lg font-semibold inline-flex items-center gap-2">
-            <i
-              aria-hidden="true"
-              className="fa-solid fa-heart fa-beat"
-              style={faAnimStyle}
-            />
-            Friendship Acquired!
-            <i
-              aria-hidden="true"
-              className="fa-solid fa-star fa-fade"
-              style={faAnimStyle}
-            />
+        {phase === "final" && finalContent && (
+          <div
+            className="mt-1 flex flex-col items-center gap-2 px-4"
+            aria-live="polite"
+          >
+            <div className="inline-flex items-center gap-2 text-lg font-semibold">
+              <i
+                aria-hidden="true"
+                className="fa-solid fa-heart fa-beat"
+                style={faAnimStyle}
+              />
+              {finalContent.title}
+              <i
+                aria-hidden="true"
+                className="fa-solid fa-star fa-fade"
+                style={faAnimStyle}
+              />
+            </div>
+
+            <p className="text-sm opacity-80 md:text-base">
+              {finalContent.subline}
+            </p>
           </div>
         )}
       </section>
 
-      <div className="w-full max-w-5xl flex items-center justify-between gap-3">
-        <div className="flex justify-center items-center gap-2 px-3 py-2 rounded-xl bg-white/60 shadow-sm text-sm">
+      <div className="flex w-full max-w-5xl items-center justify-between gap-3">
+        <div className="flex items-center justify-center gap-2 rounded-xl bg-white/60 px-3 py-2 text-sm shadow-sm">
           <i
             aria-hidden="true"
             className="fa-regular fa-face-meh-blank fa-beat-fade"
@@ -316,14 +331,14 @@ export default function Page() {
         <button
           type="button"
           onClick={handleReset}
-          className="bg-accent text-white hover:opacity-90 px-3 py-1 rounded-lg inline-flex items-center gap-2 justify-center active:scale-[0.98] transition-transform"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-3 py-1 text-white transition-transform hover:opacity-90 active:scale-[0.98]"
         >
           <i
             aria-hidden="true"
             className="fa-solid fa-rotate-left fa-spin"
             style={faAnimStyle}
           />
-          Play Again?
+          Retry Friendship?
         </button>
       </div>
     </div>
