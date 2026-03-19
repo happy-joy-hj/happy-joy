@@ -1,109 +1,208 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import type { CSSProperties, MouseEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 
-type Phase = "initial" | "no" | "final";
+import { useNoPosition } from "@/hooks/useNoPosition";
+import { usePops } from "@/hooks/usePops";
+import { useShake } from "@/hooks/useShake";
 
-function clamp(n: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, n));
-}
+import {
+  clamp,
+  getFinalContent,
+  getNoIndexFromClicks,
+  getNoScaleFromClicks,
+  getStageContent,
+  getVibe,
+} from "@/lib/friend-quest";
+import type { FinalContent, Phase } from "@/lib/friend-quest";
 
-function getNoIndexFromClicks(clicks: number) {
-  let k = 0;
-  while (((k + 1) * (k + 2)) / 2 <= clicks) k++;
-  return clamp(k, 0, 6);
-}
+type FaAnimStyle = CSSProperties & {
+  ["--fa-animation-duration"]?: string;
+};
 
-function getNoScaleFromClicks(clicks: number) {
-  if (clicks <= 1) return 1;
-  return Math.max(0.02, 1 - (clicks - 1) * 0.05);
-}
+const BASE_W = 100;
+const BASE_H = 50;
+const MAX_METER = 20;
+const YES_FINISH_DELAY = 250;
 
 export default function Page() {
   const sectionRef = useRef<HTMLElement | null>(null);
+  const yesTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [phase, setPhase] = useState<Phase>("initial");
   const [noClicks, setNoClicks] = useState(0);
-  const [noPos, setNoPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isAccepting, setIsAccepting] = useState(false);
 
-  const BASE_W = 100;
-  const BASE_H = 50;
+  const { isShaking, triggerShake, onAnimationEnd } = useShake();
+  const { pops, spawnPop, clearPops } = usePops(sectionRef);
+  const { noPos, setNoPos } = useNoPosition(
+    sectionRef,
+    phase,
+    noClicks,
+    BASE_W,
+    BASE_H,
+  );
 
-  const noIndex = useMemo(() => getNoIndexFromClicks(noClicks), [noClicks]);
+  useEffect(() => {
+    return () => {
+      if (yesTimeoutRef.current) clearTimeout(yesTimeoutRef.current);
+    };
+  }, []);
 
-  const yesScale = useMemo(() => {
-    const clicks = clamp(noClicks, 0, 14);
-    return 1 + clicks * 0.05;
-  }, [noClicks]);
+  const isMeterFull = isAccepting || phase === "final";
+  const clicksForMeter = clamp(noClicks, 0, MAX_METER);
+  const meter = isMeterFull ? 1 : Math.min(clicksForMeter / MAX_METER, 0.99);
 
-  const noScale = useMemo(() => getNoScaleFromClicks(noClicks), [noClicks]);
+  const noIndex = getNoIndexFromClicks(noClicks);
+  const noScale = getNoScaleFromClicks(noClicks);
+  const yesScale = 1 + clicksForMeter * 0.05;
 
-  const imageSrc = useMemo(() => {
-    if (phase === "final") return "/images/friend-quest/final.png";
-    if (noIndex >= 1) return `/images/friend-quest/no-series/${noIndex}.png`;
-    return "/images/friend-quest/initial.png";
-  }, [phase, noIndex]);
+  const duration = Math.max(0.35, 1 - noClicks * 0.05);
+  const faAnimStyle: FaAnimStyle = {
+    ["--fa-animation-duration"]: `${duration}s`,
+  };
 
-  function randomizeNoPosition(nextClicks: number) {
-    const el = sectionRef.current;
-    if (!el) return;
+  const vibe = getVibe(phase, noClicks);
+  const stageContent = getStageContent(phase, noClicks);
+  const [finalContent, setFinalContent] = useState<FinalContent | null>(null);
 
-    const rect = el.getBoundingClientRect();
-    const scale = getNoScaleFromClicks(nextClicks);
+  const imageSrc =
+    phase === "final"
+      ? "/images/friend-quest/final.png"
+      : noIndex >= 1
+        ? `/images/friend-quest/no-series/${noIndex}.png`
+        : "/images/friend-quest/initial.png";
 
-    const visW = BASE_W * scale;
-    const visH = BASE_H * scale;
+  const showButtons = phase !== "final" && !isAccepting;
+  const showNoText = noScale >= 0.05 && stageContent.noText.length > 0;
 
-    const maxX = Math.max(0, rect.width - visW);
-    const maxY = Math.max(0, rect.height - visH);
+  const yesIcon =
+    noClicks >= 10 ? "fa-regular fa-face-smile-beam" : "fa-solid fa-heart";
 
-    setNoPos({
-      x: Math.random() * maxX,
-      y: Math.random() * maxY,
-    });
+  const noIcon =
+    noClicks >= 8 ? "fa-regular fa-face-sad-tear" : "fa-solid fa-star";
+
+  function handleYes(e: MouseEvent<HTMLButtonElement>) {
+    if (isAccepting || phase === "final") return;
+
+    spawnPop(e.clientX, e.clientY, "fa-solid fa-heart");
+    if (Math.random() > 0.5) {
+      spawnPop(e.clientX + 10, e.clientY - 6, "fa-solid fa-star");
+    }
+
+    setIsAccepting(true);
+
+    yesTimeoutRef.current = setTimeout(() => {
+      setFinalContent(getFinalContent(noClicks));
+      setPhase("final");
+      setIsAccepting(false);
+      yesTimeoutRef.current = null;
+    }, YES_FINISH_DELAY);
   }
 
-  function handleYes() {
-    setPhase("final");
-  }
+  function handleNo(e: MouseEvent<HTMLButtonElement>) {
+    if (isAccepting || phase === "final") return;
 
-  function handleNo() {
+    spawnPop(
+      e.clientX,
+      e.clientY,
+      Math.random() > 0.5
+        ? "fa-solid fa-star fa-fade"
+        : "fa-regular fa-heart fa-fade",
+    );
+
+    triggerShake();
     setPhase("no");
-    setNoClicks((prev) => {
-      const next = prev + 1;
-      randomizeNoPosition(next);
-      return next;
-    });
+    setNoClicks((c) => c + 1);
   }
 
   function handleReset() {
+    if (yesTimeoutRef.current) {
+      clearTimeout(yesTimeoutRef.current);
+      yesTimeoutRef.current = null;
+    }
+
     setPhase("initial");
     setNoClicks(0);
+    setIsAccepting(false);
     setNoPos({ x: 0, y: 0 });
+    setFinalContent(null);
+    clearPops();
   }
 
-  useEffect(() => {
-    if (phase === "no" && noClicks === 0) {
-      randomizeNoPosition(1);
-      setTimeout(() => setNoClicks(1), 0);
-    }
-  }, [phase, noClicks]);
-
-  const showButtons = phase !== "final";
-  const showNoText = noScale >= 0.05;
-
   return (
-    <div className="flex flex-col gap-8 md:gap-12 justify-center items-center text-center">
-      <h2 className="text-primary">Quest: Be my friend. Accept?</h2>
+    <div className="container flex flex-col items-center justify-center gap-8 text-center md:gap-12">
+      <h2 className="text-primary">Friend Quest: Will you be my friend?</h2>
 
       <section
-        ref={(node) => {
-          sectionRef.current = node;
-        }}
-        className="relative rounded-2xl bg-white/80 shadow-sm flex flex-col gap-6 justify-center items-center text-center size-full max-w-5xl h-118.75 md:h-125 overflow-hidden"
+        ref={sectionRef}
+        onAnimationEnd={onAnimationEnd}
+        className={[
+          "relative flex size-full max-w-5xl flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl bg-white/80 text-center shadow-sm",
+          "h-118.75 md:h-125",
+          isShaking ? "cozy-shake" : "",
+        ].join(" ")}
       >
-        <Image src={imageSrc} alt="Friend Quest image" width={300} height={0} />
+        <div className="w-full max-w-md px-4">
+          <div className="mb-1 flex items-center justify-between text-xs opacity-80">
+            <span className="inline-flex items-center gap-2">
+              <i
+                aria-hidden="true"
+                className="fa-solid fa-paw fa-beat-fade"
+                style={faAnimStyle}
+              />
+              Friendship meter
+            </span>
+            <span>{Math.round(meter * 100)}%</span>
+          </div>
+
+          <div className="h-2 overflow-hidden rounded-full bg-black/10">
+            <div
+              className={`h-full bg-primary ${
+                phase === "final" ? "" : "transition-all duration-300"
+              }`}
+              style={{ width: `${meter * 100}%` }}
+            />
+          </div>
+        </div>
+
+        <div
+          className="inline-flex items-center gap-2 rounded-2xl bg-white/70 px-4 py-2 shadow-sm"
+          aria-live="polite"
+        >
+          <i
+            aria-hidden="true"
+            className={`${vibe.icon} ${vibe.anim}`}
+            style={faAnimStyle}
+          />
+          <span className="text-sm md:text-base">{stageContent.dialogue}</span>
+        </div>
+
+        <Image
+          src={imageSrc}
+          alt="Friend Quest mascot reaction"
+          width={300}
+          height={300}
+          className="h-auto w-45 select-none lg:w-65"
+          draggable={false}
+          priority
+        />
+
+        {pops.map((p) => (
+          <i
+            key={p.id}
+            aria-hidden="true"
+            className={`${p.iconClass} cozy-pop pointer-events-none absolute select-none`}
+            style={{
+              left: p.x,
+              top: p.y,
+              transform: "translate(-50%, -50%)",
+              fontSize: 18,
+            }}
+          />
+        ))}
 
         {showButtons && (
           <>
@@ -113,17 +212,32 @@ export default function Page() {
                   type="button"
                   onClick={handleYes}
                   style={{ width: BASE_W, height: BASE_H }}
-                  className="rounded-full bg-primary text-white grid place-items-center"
+                  className="grid place-items-center rounded-full bg-primary text-white transition-transform duration-150 active:scale-95"
                 >
-                  Yes
+                  <span className="inline-flex items-center gap-2">
+                    <i
+                      aria-hidden="true"
+                      className="fa-solid fa-heart fa-beat"
+                      style={faAnimStyle}
+                    />
+                    {stageContent.yesText}
+                  </span>
                 </button>
+
                 <button
                   type="button"
                   onClick={handleNo}
                   style={{ width: BASE_W, height: BASE_H }}
-                  className="rounded-full bg-secondary text-white grid place-items-center"
+                  className="grid place-items-center rounded-full bg-secondary text-white transition-transform duration-150 active:scale-95"
                 >
-                  No
+                  <span className="inline-flex items-center gap-2">
+                    <i
+                      aria-hidden="true"
+                      className="fa-solid fa-star fa-fade"
+                      style={faAnimStyle}
+                    />
+                    {stageContent.noText}
+                  </span>
                 </button>
               </div>
             )}
@@ -138,9 +252,16 @@ export default function Page() {
                     height: BASE_H,
                     transform: `scale(${yesScale})`,
                   }}
-                  className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-primary text-white grid place-items-center origin-center"
+                  className="absolute bottom-6 left-1/2 grid origin-center -translate-x-1/2 place-items-center rounded-full bg-primary text-white transition-transform duration-200 ease-out active:scale-[0.98]"
                 >
-                  Yes
+                  <span className="inline-flex items-center gap-2">
+                    <i
+                      aria-hidden="true"
+                      className={`${yesIcon} fa-beat-fade`}
+                      style={faAnimStyle}
+                    />
+                    {stageContent.yesText}
+                  </span>
                 </button>
 
                 <button
@@ -154,27 +275,70 @@ export default function Page() {
                     top: noPos.y,
                     transform: `scale(${noScale})`,
                   }}
-                  className="absolute rounded-full bg-secondary text-white grid place-items-center origin-top-left"
+                  className="absolute grid origin-top-left place-items-center rounded-full bg-secondary text-white transition-all duration-200 ease-out active:scale-95"
                 >
-                  {showNoText ? "No" : ""}
+                  <span className="inline-flex items-center gap-2">
+                    <i
+                      aria-hidden="true"
+                      className={`${noIcon} fa-fade`}
+                      style={faAnimStyle}
+                    />
+                    {showNoText ? stageContent.noText : ""}
+                  </span>
                 </button>
               </>
             )}
           </>
         )}
+
+        {phase === "final" && finalContent && (
+          <div
+            className="mt-1 flex flex-col items-center gap-2 px-4"
+            aria-live="polite"
+          >
+            <div className="inline-flex items-center gap-2 text-lg font-semibold">
+              <i
+                aria-hidden="true"
+                className="fa-solid fa-heart fa-beat"
+                style={faAnimStyle}
+              />
+              {finalContent.title}
+              <i
+                aria-hidden="true"
+                className="fa-solid fa-star fa-fade"
+                style={faAnimStyle}
+              />
+            </div>
+
+            <p className="text-sm opacity-80 md:text-base">
+              {finalContent.subline}
+            </p>
+          </div>
+        )}
       </section>
 
-      <div className="w-full max-w-5xl flex items-center justify-between gap-3">
-        <div className="flex justify-center items-center gap-2 px-3 py-2 rounded-xl bg-white/60 shadow-sm text-sm">
-          <span>No clicks:</span>
+      <div className="flex w-full max-w-5xl items-center justify-between gap-3">
+        <div className="flex items-center justify-center gap-2 rounded-xl bg-white/60 px-3 py-2 text-sm shadow-sm">
+          <i
+            aria-hidden="true"
+            className="fa-regular fa-face-meh-blank fa-beat-fade"
+            style={faAnimStyle}
+          />
+          <span>No Taps:</span>
           <span className="font-semibold text-secondary">{noClicks}</span>
         </div>
+
         <button
           type="button"
           onClick={handleReset}
-          className="bg-accent text-white hover:opacity-90 px-3 py-1 rounded-lg inline-flex justify-center"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-3 py-1 text-white transition-transform hover:opacity-90 active:scale-[0.98]"
         >
-          Play Again?
+          <i
+            aria-hidden="true"
+            className="fa-solid fa-rotate-left fa-spin"
+            style={faAnimStyle}
+          />
+          Retry Friendship?
         </button>
       </div>
     </div>

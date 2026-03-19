@@ -1,0 +1,49 @@
+@layer utilities {
+  @keyframes cozy-pop {
+    0% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.75);
+    }
+    15% {
+      opacity: 1;
+      transform: translate(-50%, -70%) scale(1.12);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -140%) scale(1);
+    }
+  }
+
+  @keyframes cozy-shake {
+    0% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-2px);
+    }
+    50% {
+      transform: translateX(2px);
+    }
+    75% {
+      transform: translateX(-1px);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  .cozy-shake {
+    animation: cozy-shake 180ms ease-in-out;
+  }
+
+  .cozy-pop {
+    animation: cozy-pop 900ms ease-out forwards;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cozy-shake,
+    .cozy-pop {
+      animation: none !important;
+    }
+  }
+}
