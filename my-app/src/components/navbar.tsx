@@ -13,14 +13,15 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-10 py-3 flex flex-row items-center bg-primary-foreground/80 border-b border-border gap-8 backdrop-blur mb-20">
-      <div className="container flex items-center justify-between max-w-">
+    <header className="sticky top-0 z-10 mb-20 flex flex-row items-center gap-8 border-b border-border bg-primary-foreground/80 py-3 backdrop-blur">
+      <div className="max-w- container flex items-center justify-between">
         <Link href="/">
           <Image
             src="/images/hj-logo.png"
-            alt="logo"
-            width={60}
-            height={0}
+            alt="Happy Joy"
+            width={825}
+            height={679}
+            className="h-auto w-15"
             priority
           />
         </Link>
@@ -35,10 +36,10 @@ export default function Navbar() {
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
                 className={[
-                  "font-semibold px-3 py-2",
+                  "px-3 py-2 font-semibold",
                   isActive
-                    ? "bg-secondary text-secondary-foreground rounded-xl hover:opacity-90"
-                    : "text-secondary hover:bg-white/40 rounded-xl",
+                    ? "rounded-xl bg-secondary text-secondary-foreground hover:opacity-90"
+                    : "rounded-xl text-secondary hover:bg-white/40",
                 ].join(" ")}
               >
                 {item.label}

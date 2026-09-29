@@ -13,20 +13,20 @@ export default function GameCard({
   disabled = false,
 }: GameCardProps) {
   return (
-    <div className="rounded-2xl bg-white/70 p-6 shadow-sm flex flex-col gap-6 justify-center items-center text-center">
+    <div className="flex flex-col items-center justify-center gap-6 rounded-2xl bg-white/70 p-6 text-center shadow-sm">
       <Link
         href={disabled ? "" : href}
         className={disabled ? "pointer-events-none" : ""}
       >
         <Image
           src={img || "/images/default.png"}
-          alt={title + " image"}
-          width={250}
-          height={0}
-          className="rounded-xl"
+          alt={`${title} image`}
+          width={1536}
+          height={1024}
+          className="h-auto w-62.5 rounded-xl"
         />
       </Link>
-      <div className="flex flex-col gap-2 max-w-75">
+      <div className="flex max-w-75 flex-col gap-2">
         <h4>{title}</h4>
         <p className="line-clamp-2">{description}</p>
       </div>
@@ -34,14 +34,14 @@ export default function GameCard({
         <button
           type="button"
           disabled
-          className="bg-accent text-white opacity-60 cursor-not-allowed font-semibold w-full max-w-62.5"
+          className="w-full max-w-62.5 cursor-not-allowed bg-accent font-semibold text-white opacity-60"
         >
           {label}
         </button>
       ) : (
         <Link
           href={href}
-          className="bg-accent text-white hover:opacity-90 font-semibold w-full max-w-62.5 py-2 rounded-lg inline-flex justify-center"
+          className="inline-flex w-full max-w-62.5 justify-center rounded-lg bg-accent py-2 font-semibold text-white hover:opacity-90"
         >
           {label}
         </Link>
