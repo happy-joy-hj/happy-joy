@@ -2,6 +2,8 @@
 @import "./animations.css";
 
 :root {
+  color-scheme: light;
+
   --background: #e6f0fa;
   --foreground: #505462;
 
@@ -36,13 +38,6 @@
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
