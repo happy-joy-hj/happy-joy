@@ -14,7 +14,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-10 mb-20 flex flex-row items-center gap-8 border-b border-border bg-primary-foreground/80 py-3 backdrop-blur">
-      <div className="max-w- container flex items-center justify-between">
+      <div className="container flex items-center justify-between">
         <Link href="/">
           <Image
             src="/images/hj-logo.png"
