@@ -63,8 +63,8 @@ export default function GreetingClock() {
   }, [timeNow]);
 
   return (
-    <div className="inline-flex items-center gap-3 rounded-full bg-white/60 px-4 py-2 shadow-md">
-      <span className="text-secondary font-semibold">
+    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-2xl border border-white/60 bg-white/60 px-4 py-3 text-center shadow-sm">
+      <span className="font-semibold text-secondary">
         {view?.greeting ?? "Hello"}
       </span>
       <span className="text-foreground/40">•</span>
