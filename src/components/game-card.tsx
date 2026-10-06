@@ -2,7 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { Game } from "@/lib/types";
 
-type GameCardProps = Game;
+type GameCardProps = Game & {
+  preload?: boolean;
+};
 
 export default function GameCard({
   title,
@@ -11,6 +13,7 @@ export default function GameCard({
   href,
   label = "Play",
   disabled = false,
+  preload = false,
 }: GameCardProps) {
   return (
     <div
@@ -29,6 +32,8 @@ export default function GameCard({
           alt={`${title} image`}
           width={1536}
           height={1024}
+          preload={preload}
+          sizes="250px"
           className={`h-auto w-full rounded-xl transition duration-300 ${
             disabled ? "" : "group-hover:scale-[1.03]"
           }`}
