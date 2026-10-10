@@ -214,9 +214,9 @@ export default function Page() {
                   type="button"
                   onClick={handleYes}
                   style={{ width: BASE_W, height: BASE_H }}
-                  className="grid cursor-pointer place-items-center rounded-full bg-primary text-white transition-transform duration-150 focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-95"
+                  className="grid cursor-pointer place-items-center rounded-full bg-primary text-primary-foreground transition-transform duration-150 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-95"
                 >
-                  <span className="flex w-full items-center justify-center gap-2 px-2">
+                  <span className="inline-flex items-center justify-center gap-2">
                     <i
                       aria-hidden="true"
                       className="fa-solid fa-heart fa-beat shrink-0"
@@ -232,9 +232,9 @@ export default function Page() {
                   type="button"
                   onClick={handleNo}
                   style={{ width: BASE_W, height: BASE_H }}
-                  className="grid cursor-pointer place-items-center rounded-full bg-secondary text-white transition-transform duration-150 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-95"
+                  className="grid cursor-pointer place-items-center rounded-full bg-secondary text-secondary-foreground transition-transform duration-150 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-95"
                 >
-                  <span className="flex w-full items-center justify-center gap-2 px-2">
+                  <span className="inline-flex items-center justify-center gap-2">
                     <i
                       aria-hidden="true"
                       className="fa-solid fa-star fa-fade shrink-0"
@@ -258,9 +258,9 @@ export default function Page() {
                     height: BASE_H,
                     transform: `scale(${yesScale})`,
                   }}
-                  className="absolute bottom-6 left-1/2 grid origin-center -translate-x-1/2 cursor-pointer place-items-center rounded-full bg-primary text-white transition-transform duration-200 ease-out focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-[0.98]"
+                  className="absolute bottom-6 left-1/2 grid origin-center -translate-x-1/2 cursor-pointer place-items-center rounded-full bg-primary text-primary-foreground transition-transform duration-200 ease-out focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-[0.98]"
                 >
-                  <span className="flex w-full items-center justify-center gap-2 px-2">
+                  <span className="inline-flex items-center justify-center gap-2">
                     <i
                       aria-hidden="true"
                       className={`${yesIcon} fa-beat-fade shrink-0`}
@@ -283,9 +283,9 @@ export default function Page() {
                     top: noPos.y,
                     transform: `scale(${noScale})`,
                   }}
-                  className="absolute grid origin-top-left cursor-pointer place-items-center rounded-full bg-secondary text-white transition-all duration-200 ease-out focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-95"
+                  className="absolute grid origin-top-left cursor-pointer place-items-center rounded-full bg-secondary text-secondary-foreground transition-all duration-200 ease-out focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-95"
                 >
-                  <span className="flex w-full items-center justify-center gap-2 px-2">
+                  <span className="inline-flex items-center justify-center gap-2">
                     <i
                       aria-hidden="true"
                       className={`${noIcon} fa-fade shrink-0`}
@@ -335,13 +335,15 @@ export default function Page() {
             style={faAnimStyle}
           />
           <span>No Taps:</span>
-          <span className="font-semibold text-secondary">{noClicks}</span>
+          <span className="font-semibold text-secondary-emphasis">
+            {noClicks}
+          </span>
         </div>
 
         <button
           type="button"
           onClick={handleReset}
-          className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-accent px-3 py-2 font-semibold text-white transition hover:-translate-y-0.5 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-[0.98]"
+          className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-accent px-3 py-2 font-semibold text-accent-foreground transition hover:-translate-y-0.5 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-[0.98]"
         >
           <i
             aria-hidden="true"

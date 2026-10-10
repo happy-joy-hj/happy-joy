@@ -4,20 +4,28 @@
 :root {
   color-scheme: light;
 
-  --background: #e6f0fa;
-  --foreground: #505462;
+  --background: #fbf8f3;
+  --foreground: #3e4542;
 
-  --primary: #74acea;
-  --secondary: #8fa3f3;
-  --accent: #9fd0f2;
+  --primary: #468071;
+  --secondary: #e8a890;
+  --accent: #f2d6a2;
 
-  --primary-foreground: #d7eaff;
-  --secondary-foreground: #fdf9f8;
+  --primary-foreground: #ffffff;
+  --secondary-foreground: #3e4542;
+  --accent-foreground: #3e4542;
 
-  --border: #c1d3ee;
+  --surface: #fffcf9;
+  --surface-muted: #f0f7f4;
 
-  --success: #70a080;
-  --warning: #e4887f;
+  --border: #d8e6e0;
+
+  --success: #467a61;
+  --warning: #9c5f1f;
+
+  --focus: #5a9e8e;
+
+  --secondary-emphasis: #a65f4e;
 }
 
 @theme inline {
@@ -30,11 +38,19 @@
 
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
 
   --color-border: var(--border);
 
   --color-success: var(--success);
   --color-warning: var(--warning);
+
+  --color-focus: var(--focus);
+
+  --color-secondary-emphasis: var(--secondary-emphasis);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
