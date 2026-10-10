@@ -47,14 +47,14 @@ export default function GameCard({
         <button
           type="button"
           disabled
-          className="w-full max-w-62.5 cursor-not-allowed bg-accent/60 font-semibold text-white/80 shadow-none"
+          className="w-full max-w-62.5 cursor-not-allowed bg-accent/60 font-semibold text-accent-foreground/60 shadow-none"
         >
           {label}
         </button>
       ) : (
         <Link
           href={href}
-          className="inline-flex w-full max-w-62.5 justify-center rounded-lg bg-accent py-2 font-semibold text-white transition hover:-translate-y-0.5 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
+          className="inline-flex w-full max-w-62.5 justify-center rounded-lg bg-accent py-2 font-semibold text-accent-foreground transition hover:-translate-y-0.5 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
         >
           {label}
         </Link>

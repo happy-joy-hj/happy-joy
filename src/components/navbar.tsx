@@ -13,9 +13,12 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-10 mb-20 flex flex-row items-center gap-8 border-b border-border bg-primary-foreground/80 py-3 backdrop-blur">
+    <header className="sticky top-0 z-10 mb-20 flex flex-row items-center gap-8 border-b border-border bg-surface/80 py-3 backdrop-blur">
       <div className="container flex items-center justify-between">
-        <Link href="/">
+        <Link
+          href="/"
+          className="rounded-xl focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:outline-none"
+        >
           <Image
             src="/images/hj-logo.png"
             alt="Happy Joy"
@@ -35,12 +38,11 @@ export default function Navbar() {
                 key={item.href}
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
-                className={[
-                  "px-3 py-2 font-semibold",
+                className={`rounded-xl px-3 py-2 font-semibold focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:outline-none ${
                   isActive
-                    ? "rounded-xl bg-secondary text-secondary-foreground hover:opacity-90"
-                    : "rounded-xl text-secondary hover:bg-white/40",
-                ].join(" ")}
+                    ? "bg-secondary text-secondary-foreground hover:opacity-90"
+                    : "text-primary hover:bg-secondary/15"
+                }`}
               >
                 {item.label}
               </Link>
