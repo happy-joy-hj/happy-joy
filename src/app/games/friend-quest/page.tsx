@@ -105,6 +105,10 @@ export default function Page() {
   function handleNo(e: MouseEvent<HTMLButtonElement>) {
     if (isAccepting || phase === "final") return;
 
+    if (e.detail > 0) {
+      e.currentTarget.blur();
+    }
+
     spawnPop(
       e.clientX,
       e.clientY,
@@ -160,7 +164,14 @@ export default function Page() {
             <span>{Math.round(meter * 100)}%</span>
           </div>
 
-          <div className="h-2 overflow-hidden rounded-full bg-black/10">
+          <div
+            className="h-2 overflow-hidden rounded-full bg-black/10"
+            role="progressbar"
+            aria-label="Friendship meter"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(meter * 100)}
+          >
             <div
               className={`h-full bg-primary ${
                 phase === "final" ? "" : "transition-all duration-300"
@@ -184,7 +195,7 @@ export default function Page() {
 
         <Image
           src={imageSrc}
-          alt="Friend Quest mascot reaction"
+          alt=""
           width={300}
           height={300}
           className="h-auto w-45 select-none lg:w-65"
@@ -274,7 +285,7 @@ export default function Page() {
 
                 <button
                   type="button"
-                  aria-label="No"
+                  aria-label={showNoText ? stageContent.noText : "No"}
                   onClick={handleNo}
                   style={{
                     width: BASE_W,
