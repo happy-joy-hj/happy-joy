@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 type Greeting = "Good Morning" | "Good Afternoon" | "Good Evening";
 
@@ -10,67 +10,48 @@ function getGreeting(hours: number): Greeting {
   return "Good Evening";
 }
 
-function formatTime(d: Date) {
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-  const parts = new Intl.DateTimeFormat(undefined, {
-    timeZone,
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-    timeZoneName: "short",
-  }).formatToParts(d);
-
-  const hour = parts.find((p) => p.type === "hour")?.value ?? "";
-  const minute = parts.find((p) => p.type === "minute")?.value ?? "";
-  const second = parts.find((p) => p.type === "second")?.value ?? "";
-  const dayPeriod = parts.find((p) => p.type === "dayPeriod")?.value ?? "";
-  const tz = parts.find((p) => p.type === "timeZoneName")?.value ?? "";
-
-  return `${hour}:${minute}:${second} ${dayPeriod} (${tz})`;
-}
-
 export default function GreetingClock() {
   const [timeNow, setTimeNow] = useState<Date | null>(null);
 
   useEffect(() => {
-    const tick = () => setTimeNow(new Date());
+    const updateTime = () => setTimeNow(new Date());
 
-    const t0 = window.setTimeout(tick, 0);
-    const id = window.setInterval(tick, 1000);
+    updateTime();
 
-    return () => {
-      window.clearTimeout(t0);
-      window.clearInterval(id);
-    };
+    const interval = window.setInterval(updateTime, 30_000);
+
+    return () => window.clearInterval(interval);
   }, []);
 
-  const view = useMemo(() => {
-    if (!timeNow) return null;
+  const greeting = timeNow ? getGreeting(timeNow.getHours()) : "Hello";
 
-    const greeting = getGreeting(timeNow.getHours());
+  const time = timeNow?.toLocaleTimeString(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 
-    const month = timeNow.toLocaleDateString(undefined, { month: "long" });
-    const weekday = timeNow.toLocaleDateString(undefined, { weekday: "long" });
-    const day = timeNow.getDate();
-    const year = timeNow.getFullYear();
-    const customDate = `${month} ${day}, ${year} (${weekday})`;
-
-    const timePart = formatTime(timeNow);
-
-    return { greeting, customDate, timePart };
-  }, [timeNow]);
+  const date = timeNow?.toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "long",
+  });
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-2xl border border-white/60 bg-white/60 px-4 py-3 text-center shadow-sm">
-      <span className="font-semibold text-secondary-emphasis">
-        {view?.greeting ?? "Hello"}
+    <div className="inline-flex max-w-full items-center justify-center gap-2 rounded-2xl border border-white/60 bg-white/60 px-4 py-3 text-center shadow-sm">
+      <span className="font-semibold text-secondary-emphasis">{greeting}</span>
+
+      <span aria-hidden="true" className="text-foreground/40">
+        ·
       </span>
-      <span className="text-foreground/40">•</span>
-      <span>{view?.customDate ?? "—"}</span>
-      <span>·</span>
-      <span>{view?.timePart ?? "—"}</span>
+
+      <span className="hidden sm:inline">{date ?? "—"}</span>
+
+      <span aria-hidden="true" className="hidden text-foreground/40 sm:inline">
+        ·
+      </span>
+
+      <span>{time ?? "—"}</span>
     </div>
   );
 }

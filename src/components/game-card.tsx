@@ -17,8 +17,10 @@ export default function GameCard({
 }: GameCardProps) {
   return (
     <div
-      className={`flex h-full flex-col items-center justify-center gap-6 rounded-2xl border border-white/60 bg-white/70 p-6 text-center shadow-sm transition ${
-        disabled ? "" : "hover:-translate-y-1 hover:shadow-md"
+      className={`flex h-full flex-col items-center justify-center gap-6 rounded-3xl border border-white/70 bg-gradient-to-br from-surface/95 to-surface-muted/85 p-6 text-center shadow-[0_8px_28px_rgba(62,69,66,0.07)] transition-all duration-300 ease-out ${
+        disabled
+          ? ""
+          : "hover:-translate-y-1.5 hover:shadow-[0_14px_36px_rgba(62,69,66,0.12)]"
       }`}
     >
       <Link

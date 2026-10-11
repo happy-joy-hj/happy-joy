@@ -146,7 +146,7 @@ export default function Page() {
         ref={sectionRef}
         onAnimationEnd={onAnimationEnd}
         className={[
-          "relative flex size-full max-w-5xl flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border border-white/60 bg-white/80 text-center shadow-sm",
+          "relative flex size-full max-w-5xl flex-col items-center justify-center gap-4 overflow-hidden rounded-3xl border border-white/70 bg-gradient-to-br from-surface/95 to-surface-muted/85 text-center shadow-[0_8px_28px_rgba(62,69,66,0.07)]",
           "h-118.75 md:h-125",
           isShaking ? "cozy-shake" : "",
         ].join(" ")}

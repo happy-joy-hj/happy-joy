@@ -57,7 +57,20 @@
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(
+      ellipse at 12% 15%,
+      rgba(150, 211, 177, 0.42) 0%,
+      transparent 48%
+    ),
+    radial-gradient(
+      ellipse at 88% 75%,
+      rgba(242, 174, 150, 0.35) 0%,
+      transparent 48%
+    ),
+    var(--background);
+
+  background-attachment: fixed;
   color: var(--foreground);
 }
 
