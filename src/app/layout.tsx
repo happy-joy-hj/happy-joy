@@ -14,9 +14,27 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const description = "Quick cozy games to help you relax and smile.";
+
 export const metadata: Metadata = {
-  title: "Happy Joy",
-  description: "Quick cozy games to help you relax and smile.",
+  metadataBase: new URL("https://happy-joy.vercel.app"),
+  title: {
+    default: "Happy Joy",
+    template: "%s | Happy Joy",
+  },
+  description,
+  openGraph: {
+    title: "Happy Joy",
+    description,
+    url: "/",
+    siteName: "Happy Joy",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Happy Joy",
+    description,
+  },
 };
 
 export default function RootLayout({
