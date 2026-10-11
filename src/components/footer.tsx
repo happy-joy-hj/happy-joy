@@ -1,12 +1,13 @@
 export default function Footer() {
   return (
-    <footer className="mt-12 flex items-center justify-center gap-3 border-t border-border bg-primary p-2 text-center text-primary-foreground/90">
-      <span>Made with cozy vibes</span>
-      <i className="fa-solid fa-face-laugh-squint" />
-      <span>
-        <i className="fa-regular fa-copyright" /> {new Date().getFullYear()}
-      </span>
-      <span>Happy Joy</span>
+    <footer className="mt-12 border-t border-border bg-surface/75 py-5 backdrop-blur-sm">
+      <div className="container flex flex-col items-center justify-between gap-2 text-center text-sm text-foreground/70 sm:flex-row">
+        <p className="text-sm">
+          Made with cozy vibes <span aria-hidden="true">♡</span>
+        </p>
+
+        <p className="text-sm">© {new Date().getFullYear()} Happy Joy</p>
+      </div>
     </footer>
   );
 }
