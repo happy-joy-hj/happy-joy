@@ -1,4 +1,4 @@
-export type Phase = "initial" | "no" | "final";
+export type Phase = "initial" | "no" | "final" | "declined";
 
 export function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
@@ -12,7 +12,7 @@ export function getNoIndexFromClicks(clicks: number) {
 
 export function getNoScaleFromClicks(clicks: number) {
   if (clicks <= 1) return 1;
-  return Math.max(0.02, 1 - (clicks - 1) * 0.05);
+  return Math.max(0.5, 1 - (clicks - 1) * 0.05);
 }
 
 export type Vibe = {
@@ -21,6 +21,13 @@ export type Vibe = {
 };
 
 export function getVibe(phase: Phase, noClicks: number): Vibe {
+  if (phase === "declined") {
+    return {
+      icon: "fa-regular fa-face-smile",
+      anim: "",
+    };
+  }
+
   if (phase === "final") {
     return {
       icon: "fa-solid fa-handshake",
@@ -76,6 +83,14 @@ export type StageContent = {
 };
 
 export function getStageContent(phase: Phase, noClicks: number): StageContent {
+  if (phase === "declined") {
+    return {
+      dialogue: "That's okay! Maybe another time?",
+      yesText: "",
+      noText: "",
+    };
+  }
+
   if (phase === "final") {
     return {
       dialogue: "YAY!! I knew you had bestie energy.",

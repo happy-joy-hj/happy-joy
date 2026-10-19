@@ -25,11 +25,15 @@ type FaAnimStyle = CSSProperties & {
 const BASE_W = 100;
 const BASE_H = 50;
 const MAX_METER = 20;
+const MAX_INCOMPLETE_PROGRESS = 0.95;
 const YES_FINISH_DELAY = 250;
 
 export default function Page() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const yesTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initialYesButtonRef = useRef<HTMLButtonElement | null>(null);
+  const shouldRestoreFocusRef = useRef(false);
+  const endingHeadingRef = useRef<HTMLHeadingElement | null>(null);
 
   const [phase, setPhase] = useState<Phase>("initial");
   const [noClicks, setNoClicks] = useState(0);
@@ -51,13 +55,30 @@ export default function Page() {
     };
   }, []);
 
+  useEffect(() => {
+    if (phase !== "initial" || !shouldRestoreFocusRef.current) {
+      return;
+    }
+
+    initialYesButtonRef.current?.focus();
+    shouldRestoreFocusRef.current = false;
+  }, [phase]);
+
+  useEffect(() => {
+    if (phase === "final" || phase === "declined") {
+      endingHeadingRef.current?.focus();
+    }
+  }, [phase]);
+
   const isMeterFull = isAccepting || phase === "final";
   const clicksForMeter = clamp(noClicks, 0, MAX_METER);
-  const meter = isMeterFull ? 1 : Math.min(clicksForMeter / MAX_METER, 0.99);
+  const meter = isMeterFull
+    ? 1
+    : Math.min(clicksForMeter / MAX_METER, MAX_INCOMPLETE_PROGRESS);
 
   const noIndex = getNoIndexFromClicks(noClicks);
   const noScale = getNoScaleFromClicks(noClicks);
-  const yesScale = 1 + clicksForMeter * 0.05;
+  const yesScale = Math.min(1.5, 1 + clicksForMeter * 0.05);
 
   const duration = Math.max(0.35, 1 - noClicks * 0.05);
   const faAnimStyle: FaAnimStyle = {
@@ -71,11 +92,13 @@ export default function Page() {
   const imageSrc =
     phase === "final"
       ? "/images/friend-quest/final.png"
-      : noIndex >= 1
-        ? `/images/friend-quest/no-series/${noIndex}.png`
-        : "/images/friend-quest/initial.png";
+      : phase === "declined"
+        ? "/images/friend-quest/initial.png"
+        : noIndex >= 1
+          ? `/images/friend-quest/no-series/${noIndex}.png`
+          : "/images/friend-quest/initial.png";
 
-  const showButtons = phase !== "final" && !isAccepting;
+  const showButtons = phase !== "final" && phase !== "declined" && !isAccepting;
   const showNoText = noScale >= 0.05 && stageContent.noText.length > 0;
 
   const yesIcon =
@@ -122,11 +145,21 @@ export default function Page() {
     setNoClicks((c) => c + 1);
   }
 
+  function handleDecline() {
+    if (isAccepting || phase === "final" || phase === "declined") {
+      return;
+    }
+
+    setPhase("declined");
+  }
+
   function handleReset() {
     if (yesTimeoutRef.current) {
       clearTimeout(yesTimeoutRef.current);
       yesTimeoutRef.current = null;
     }
+
+    shouldRestoreFocusRef.current = true;
 
     setPhase("initial");
     setNoClicks(0);
@@ -159,7 +192,7 @@ export default function Page() {
                 className="fa-solid fa-paw fa-beat-fade"
                 style={faAnimStyle}
               />
-              Friendship meter
+              Quest progress
             </span>
             <span>{Math.round(meter * 100)}%</span>
           </div>
@@ -167,13 +200,13 @@ export default function Page() {
           <div
             className="h-2 overflow-hidden rounded-full bg-black/10"
             role="progressbar"
-            aria-label="Friendship meter"
+            aria-label="Quest progress"
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={Math.round(meter * 100)}
           >
             <div
-              className={`h-full bg-primary ${
+              className={`friend-quest-motion h-full bg-primary ${
                 phase === "final" ? "" : "transition-all duration-300"
               }`}
               style={{ width: `${meter * 100}%` }}
@@ -222,7 +255,9 @@ export default function Page() {
             {phase === "initial" && (
               <div className="flex gap-4">
                 <button
+                  ref={initialYesButtonRef}
                   type="button"
+                  aria-label="Say yes and befriend the kitten"
                   onClick={handleYes}
                   style={{ width: BASE_W, height: BASE_H }}
                   className="grid cursor-pointer place-items-center rounded-full bg-primary text-primary-foreground transition-transform duration-150 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-95"
@@ -241,6 +276,7 @@ export default function Page() {
 
                 <button
                   type="button"
+                  aria-label="Say no and continue the game"
                   onClick={handleNo}
                   style={{ width: BASE_W, height: BASE_H }}
                   className="grid cursor-pointer place-items-center rounded-full bg-secondary text-secondary-foreground transition-transform duration-150 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-95"
@@ -261,49 +297,59 @@ export default function Page() {
 
             {phase === "no" && (
               <>
-                <button
-                  type="button"
-                  onClick={handleYes}
-                  style={{
-                    width: BASE_W,
-                    height: BASE_H,
-                    transform: `scale(${yesScale})`,
-                  }}
-                  className="absolute bottom-6 left-1/2 grid origin-center -translate-x-1/2 cursor-pointer place-items-center rounded-full bg-primary text-primary-foreground transition-transform duration-200 ease-out focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-[0.98]"
-                >
-                  <span className="inline-flex items-center justify-center gap-2">
-                    <i
-                      aria-hidden="true"
-                      className={`${yesIcon} fa-beat-fade shrink-0`}
-                      style={faAnimStyle}
-                    />
-                    <span className="min-w-0 text-center leading-tight">
-                      {stageContent.yesText}
+                <div className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2">
+                  <button
+                    type="button"
+                    aria-label={`Accept friendship: ${stageContent.yesText}`}
+                    onClick={handleYes}
+                    style={{
+                      width: BASE_W,
+                      height: BASE_H,
+                      transform: `scale(${yesScale})`,
+                    }}
+                    className="friend-quest-motion pointer-events-auto grid origin-center cursor-pointer place-items-center rounded-full bg-primary text-primary-foreground transition-transform duration-200 ease-out focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none motion-reduce:transition-none"
+                  >
+                    <span className="inline-flex items-center justify-center gap-1.5 px-2">
+                      <i
+                        aria-hidden="true"
+                        className={`${yesIcon} fa-beat-fade shrink-0`}
+                        style={faAnimStyle}
+                      />
+                      <span className="text-center text-sm leading-tight">
+                        {stageContent.yesText}
+                      </span>
                     </span>
-                  </span>
-                </button>
+                  </button>
+                </div>
 
                 <button
                   type="button"
-                  aria-label={showNoText ? stageContent.noText : "No"}
+                  aria-label={`Continue saying no: ${stageContent.noText || "No"}`}
                   onClick={handleNo}
                   style={{
                     width: BASE_W,
                     height: BASE_H,
                     left: noPos.x,
                     top: noPos.y,
-                    transform: `scale(${noScale})`,
                   }}
-                  className="absolute grid origin-top-left cursor-pointer place-items-center rounded-full bg-secondary text-secondary-foreground transition-all duration-200 ease-out focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-95"
+                  className="absolute grid cursor-pointer place-items-center rounded-full focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
                 >
-                  <span className="inline-flex items-center justify-center gap-2">
-                    <i
-                      aria-hidden="true"
-                      className={`${noIcon} fa-fade shrink-0`}
-                      style={faAnimStyle}
-                    />
-                    <span className="min-w-0 text-center leading-tight">
-                      {showNoText ? stageContent.noText : ""}
+                  <span
+                    aria-hidden="true"
+                    className="friend-quest-motion grid h-full w-full place-items-center rounded-full bg-secondary text-secondary-foreground transition-transform duration-200 ease-out motion-reduce:transition-none"
+                    style={{
+                      transform: `scale(${noScale})`,
+                    }}
+                  >
+                    <span className="inline-flex items-center justify-center gap-2">
+                      <i
+                        aria-hidden="true"
+                        className={`${noIcon} fa-fade shrink-0`}
+                        style={faAnimStyle}
+                      />
+                      <span className="min-w-0 text-center leading-tight">
+                        {showNoText ? stageContent.noText : ""}
+                      </span>
                     </span>
                   </span>
                 </button>
@@ -313,11 +359,12 @@ export default function Page() {
         )}
 
         {phase === "final" && finalContent && (
-          <div
-            className="mt-1 flex flex-col items-center gap-2 px-4"
-            aria-live="polite"
-          >
-            <div className="inline-flex items-center gap-2 text-lg font-semibold">
+          <div className="mt-1 flex flex-col items-center gap-2 px-4">
+            <h3
+              ref={endingHeadingRef}
+              tabIndex={-1}
+              className="inline-flex items-center gap-2 text-lg font-semibold focus:outline-none"
+            >
               <i
                 aria-hidden="true"
                 className="fa-solid fa-heart fa-beat"
@@ -329,10 +376,26 @@ export default function Page() {
                 className="fa-solid fa-star fa-fade"
                 style={faAnimStyle}
               />
-            </div>
+            </h3>
 
             <p className="text-sm opacity-80 md:text-base">
               {finalContent.subline}
+            </p>
+          </div>
+        )}
+
+        {phase === "declined" && (
+          <div className="flex flex-col items-center gap-2 px-4">
+            <h3
+              ref={endingHeadingRef}
+              tabIndex={-1}
+              className="text-xl font-semibold text-primary focus:outline-none"
+            >
+              No worries! Maybe next time ♡
+            </h3>
+
+            <p className="text-sm text-foreground/75">
+              The kitten waves goodbye. Come back whenever you&apos;d like!
             </p>
           </div>
         )}
@@ -351,18 +414,30 @@ export default function Page() {
           </span>
         </div>
 
-        <button
-          type="button"
-          onClick={handleReset}
-          className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-accent px-3 py-2 font-semibold text-accent-foreground transition hover:-translate-y-0.5 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-[0.98]"
-        >
-          <i
-            aria-hidden="true"
-            className="fa-solid fa-rotate-right fa-spin"
-            style={faAnimStyle}
-          />
-          Retry Friendship?
-        </button>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          {showButtons && (
+            <button
+              type="button"
+              onClick={handleDecline}
+              className="cursor-pointer rounded-lg px-3 py-2 text-sm font-medium text-foreground/75 underline-offset-4 transition-colors hover:text-primary hover:underline focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none"
+            >
+              Maybe later
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={handleReset}
+            className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-accent px-3 py-2 font-semibold text-accent-foreground transition hover:-translate-y-0.5 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none active:scale-[0.98]"
+          >
+            <i
+              aria-hidden="true"
+              className="fa-solid fa-rotate-right"
+              style={faAnimStyle}
+            />
+            {phase === "declined" ? "Play Again" : "Retry Friendship?"}
+          </button>
+        </div>
       </div>
     </div>
   );

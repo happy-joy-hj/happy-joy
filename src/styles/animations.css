@@ -47,3 +47,19 @@
     }
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .fa-beat,
+  .fa-beat-fade,
+  .fa-bounce,
+  .fa-fade,
+  .fa-shake,
+  .fa-spin {
+    animation: none !important;
+  }
+
+  .friend-quest-motion {
+    transition: none !important;
+    animation: none !important;
+  }
+}
