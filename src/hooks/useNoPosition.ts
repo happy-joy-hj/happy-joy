@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import type { RefObject } from "react";
-import { getNoScaleFromClicks } from "@/lib/friend-quest";
 import type { Phase } from "@/lib/friend-quest";
+
+const PAD = 12;
+const RESERVED_BOTTOM = 150;
 
 export function useNoPosition(
   sectionRef: RefObject<HTMLElement | null>,
@@ -14,33 +16,25 @@ export function useNoPosition(
 ) {
   const [noPos, setNoPos] = useState({ x: 0, y: 0 });
 
-  const randomizeNoPosition = useCallback(
-    (clicks: number) => {
-      const el = sectionRef.current;
-      if (!el) return;
+  const randomizeNoPosition = useCallback(() => {
+    const el = sectionRef.current;
+    if (!el) return;
 
-      const rect = el.getBoundingClientRect();
-      const scale = getNoScaleFromClicks(clicks);
+    const rect = el.getBoundingClientRect();
 
-      const visW = baseW * scale;
-      const visH = baseH * scale;
+    const maxX = Math.max(PAD, rect.width - baseW - PAD);
+    const maxY = Math.max(PAD, rect.height - RESERVED_BOTTOM - baseH - PAD);
 
-      const PAD = 12;
-      const maxX = Math.max(0, rect.width - visW - PAD * 2);
-      const maxY = Math.max(0, rect.height - visH - PAD * 2);
-
-      setNoPos({
-        x: PAD + Math.random() * maxX,
-        y: PAD + Math.random() * maxY,
-      });
-    },
-    [sectionRef, baseW, baseH],
-  );
+    setNoPos({
+      x: PAD + Math.random() * (maxX - PAD),
+      y: PAD + Math.random() * (maxY - PAD),
+    });
+  }, [sectionRef, baseW, baseH]);
 
   useLayoutEffect(() => {
     if (phase !== "no") return;
-    const clicks = Math.max(1, noClicks);
-    randomizeNoPosition(clicks);
+
+    randomizeNoPosition();
   }, [phase, noClicks, randomizeNoPosition]);
 
   useEffect(() => {
@@ -49,13 +43,12 @@ export function useNoPosition(
 
     const ro = new ResizeObserver(() => {
       if (phase !== "no") return;
-      const clicks = Math.max(1, noClicks);
-      randomizeNoPosition(clicks);
+      randomizeNoPosition();
     });
 
     ro.observe(el);
     return () => ro.disconnect();
-  }, [sectionRef, phase, noClicks, randomizeNoPosition]);
+  }, [sectionRef, phase, randomizeNoPosition]);
 
   return { noPos, setNoPos };
 }
