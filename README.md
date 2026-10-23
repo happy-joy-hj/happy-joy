@@ -65,6 +65,37 @@ Create a production build:
 npm run build
 ```
 
+## Testing and Quality Checks
+
+Happy Joy uses [Vitest](https://vitest.dev/) for unit testing and GitHub Actions for continuous integration.
+
+### Run checks locally
+
+```bash
+npm run lint
+npx tsc --noEmit
+npm test
+npm run build
+```
+
+### Unit testing
+
+Unit tests are colocated with their source files using the `.test.ts` naming convention.
+
+The current test suite covers Friend Quest's core game logic, including:
+
+- No button scaling and minimum size
+- Illustration progression and index boundaries
+- Dialogue transitions and ending-state precedence
+- Final-ending selection, including controlled randomized outcomes
+- Utility and character animation-state logic
+
+### Continuous integration
+
+Pull requests targeting `main` automatically trigger a GitHub Actions workflow that installs dependencies and runs linting, TypeScript checking, unit tests, and a production build.
+
+Browser interactions, visual presentation, keyboard navigation, and screen-reader behavior are not currently covered by automated tests and still require manual verification.
+
 ## Project Status
 
 Happy Joy currently features **Friend Quest**, with additional mini-games planned for future development.
