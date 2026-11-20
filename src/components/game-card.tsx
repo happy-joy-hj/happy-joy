@@ -15,6 +15,20 @@ export default function GameCard({
   disabled = false,
   preload = false,
 }: GameCardProps) {
+  const gameImage = (
+    <Image
+      src={img || "/images/default.png"}
+      alt={`${title} image`}
+      width={1536}
+      height={1024}
+      preload={preload}
+      sizes="250px"
+      className={`h-auto w-full rounded-xl transition duration-300 ${
+        disabled ? "" : "group-hover:scale-[1.03]"
+      }`}
+    />
+  );
+
   return (
     <div
       className={`flex h-full flex-col items-center justify-center gap-6 rounded-3xl border border-white/70 bg-gradient-to-br from-surface/95 to-surface-muted/85 p-6 text-center shadow-[0_8px_28px_rgba(62,69,66,0.07)] transition-all duration-300 ease-out ${
@@ -23,24 +37,18 @@ export default function GameCard({
           : "hover:-translate-y-1.5 hover:shadow-[0_14px_36px_rgba(62,69,66,0.12)]"
       }`}
     >
-      <Link
-        href={disabled ? "" : href}
-        className={`w-full max-w-62.5 overflow-hidden rounded-xl ${
-          disabled ? "pointer-events-none" : "group"
-        }`}
-      >
-        <Image
-          src={img || "/images/default.png"}
-          alt={`${title} image`}
-          width={1536}
-          height={1024}
-          preload={preload}
-          sizes="250px"
-          className={`h-auto w-full rounded-xl transition duration-300 ${
-            disabled ? "" : "group-hover:scale-[1.03]"
-          }`}
-        />
-      </Link>
+      {disabled ? (
+        <div className="w-full max-w-62.5 overflow-hidden rounded-xl">
+          {gameImage}
+        </div>
+      ) : (
+        <Link
+          href={href}
+          className="group w-full max-w-62.5 overflow-hidden rounded-xl"
+        >
+          {gameImage}
+        </Link>
+      )}
       <div className="flex max-w-75 flex-col gap-1.5">
         <h4 className="text-foreground">{title}</h4>
         <p className="line-clamp-2 text-foreground/70">{description}</p>

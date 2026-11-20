@@ -16,9 +16,9 @@ export default function GameSection({
     typeof limit === "number" ? games.slice(0, limit) : games;
 
   return (
-    <section className="mx-auto flex w-full max-w-3xl flex-col gap-4 text-center sm:gap-6">
+    <section className="mx-auto flex w-full max-w-3xl flex-col gap-4 text-center sm:gap-6 lg:max-w-5xl">
       <h2 className="text-secondary-emphasis">{title}</h2>
-      <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2">
+      <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {visibleGames.map((game, index) => (
           <GameCard key={game.title} {...game} preload={index === 0} />
         ))}
