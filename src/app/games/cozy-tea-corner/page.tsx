@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   SENCHA_MATCH_FEEDBACK,
@@ -8,6 +8,7 @@ import {
   SENCHA_TEMPERATURES,
   celsiusToFahrenheit,
   evaluateSenchaBrew,
+  explainSenchaBrew,
 } from "@/lib/cozy-tea";
 
 import type {
@@ -45,27 +46,69 @@ const RESULT_PRESENTATION: Record<
 
 export default function CozyTeaCornerPage() {
   const [unit, setUnit] = useState<TemperatureUnit>("C");
-  const [temperature, setTemperature] = useState<SenchaTemperature>(70);
-  const [steepMinutes, setSteepMinutes] = useState<SenchaSteepMinutes>(1);
+  const [temperature, setTemperature] = useState<SenchaTemperature | null>(
+    null,
+  );
+  const [steepMinutes, setSteepMinutes] = useState<SenchaSteepMinutes | null>(
+    null,
+  );
+  const canBrew = temperature !== null && steepMinutes !== null;
   const [brewResult, setBrewResult] = useState<SenchaBrewResult | null>(null);
+  const [isBrewing, setIsBrewing] = useState(false);
+  const brewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function handleBrew() {
+    if (
+      temperature === null ||
+      steepMinutes === null ||
+      isBrewing ||
+      brewTimerRef.current !== null
+    ) {
+      return;
+    }
+
+    setBrewResult(null);
+
     const result = evaluateSenchaBrew(temperature, steepMinutes);
-    setBrewResult(result);
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setBrewResult(result);
+      return;
+    }
+
+    setIsBrewing(true);
+
+    brewTimerRef.current = setTimeout(() => {
+      setBrewResult(result);
+      setIsBrewing(false);
+      brewTimerRef.current = null;
+    }, 1200);
   }
 
   function handleNewCup() {
-    setTemperature(70);
-    setSteepMinutes(1);
+    if (brewTimerRef.current !== null) {
+      clearTimeout(brewTimerRef.current);
+      brewTimerRef.current = null;
+    }
+
+    setIsBrewing(false);
     setBrewResult(null);
   }
+
+  useEffect(() => {
+    return () => {
+      if (brewTimerRef.current !== null) {
+        clearTimeout(brewTimerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <section className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <h1 className="text-center text-3xl text-primary">Cozy Tea Corner</h1>
 
       <p className="text-center text-foreground/75">
-        Take a little break and brew your perfect cup of sencha.
+        Take a little break and brew a cozy cup of sencha for Mochi.
       </p>
 
       <div className="flex flex-col gap-6 rounded-3xl border border-border bg-gradient-to-br from-surface to-surface-muted/80 p-5 shadow-sm sm:p-7">
@@ -77,17 +120,31 @@ export default function CozyTeaCornerPage() {
             🍵
           </div>
 
-          <p className="font-semibold text-primary">
-            A little pause, a warm cup.
-          </p>
+          <p className="font-semibold text-primary">Mochi&apos;s order</p>
 
           <p className="max-w-md text-sm text-foreground/75">
-            Choose your brewing settings and discover your perfect cup of
-            sencha.
+            One cup of sencha, please! I&apos;d love a smooth, gentle green tea
+            that isn&apos;t too bitter.
           </p>
         </div>
 
-        <fieldset className="flex flex-col gap-3">
+        {!isBrewing && brewResult === null && (
+          <details className="rounded-2xl border border-border bg-surface/80 px-4 py-4">
+            <summary className="cursor-pointer font-semibold text-primary focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none">
+              💡 Need a brewing hint?
+            </summary>
+
+            <p className="mt-3 text-sm leading-6 text-foreground/80">
+              Water temperature and steeping time both affect tea flavor. Cooler
+              water often creates a softer, less astringent cup, while hotter
+              water can bring out more bitterness and astringency. Longer
+              steeping generally produces a stronger brew. Think about the
+              flavor Mochi requested!
+            </p>
+          </details>
+        )}
+
+        <fieldset disabled={isBrewing} className="flex flex-col gap-3">
           <legend className="mb-3 font-semibold">Temperature unit</legend>
 
           <div className="flex gap-2">
@@ -97,7 +154,7 @@ export default function CozyTeaCornerPage() {
                 type="button"
                 aria-pressed={unit === option}
                 onClick={() => setUnit(option)}
-                className={`cursor-pointer rounded-lg px-4 py-2 focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none ${
+                className={`cursor-pointer rounded-lg px-4 py-2 focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
                   unit === option
                     ? "bg-primary text-primary-foreground"
                     : "bg-surface-muted text-foreground"
@@ -109,7 +166,7 @@ export default function CozyTeaCornerPage() {
           </div>
         </fieldset>
 
-        <fieldset className="flex flex-col gap-3">
+        <fieldset disabled={isBrewing} className="flex flex-col gap-3">
           <legend className="mb-3 font-semibold">Water temperature</legend>
 
           <div className="grid grid-cols-3 gap-3">
@@ -122,7 +179,7 @@ export default function CozyTeaCornerPage() {
                   setTemperature(celsius);
                   setBrewResult(null);
                 }}
-                className={`cursor-pointer rounded-xl px-3 py-4 focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none ${
+                className={`cursor-pointer rounded-xl px-3 py-4 focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
                   temperature === celsius
                     ? "bg-primary text-primary-foreground"
                     : "bg-surface-muted text-foreground"
@@ -134,7 +191,7 @@ export default function CozyTeaCornerPage() {
           </div>
         </fieldset>
 
-        <fieldset className="flex flex-col gap-3">
+        <fieldset disabled={isBrewing} className="flex flex-col gap-3">
           <legend className="mb-3 font-semibold">Steeping time</legend>
 
           <div className="grid grid-cols-3 gap-3">
@@ -147,7 +204,7 @@ export default function CozyTeaCornerPage() {
                   setSteepMinutes(minutes);
                   setBrewResult(null);
                 }}
-                className={`cursor-pointer rounded-xl px-3 py-4 focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none ${
+                className={`cursor-pointer rounded-xl px-3 py-4 focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
                   steepMinutes === minutes
                     ? "bg-primary text-primary-foreground"
                     : "bg-surface-muted text-foreground"
@@ -163,15 +220,18 @@ export default function CozyTeaCornerPage() {
           <p className="text-center text-sm text-foreground/75">
             Selected temperature:{" "}
             <strong>
-              {unit === "C" ? temperature : celsiusToFahrenheit(temperature)}°
-              {unit}
+              {temperature === null
+                ? "Not selected"
+                : `${unit === "C" ? temperature : celsiusToFahrenheit(temperature)}°${unit}`}
             </strong>
           </p>
 
           <p className="text-center text-sm text-foreground/75">
             Selected steeping time:{" "}
             <strong>
-              {steepMinutes} {steepMinutes === 1 ? "minute" : "minutes"}
+              {steepMinutes === null
+                ? "Not selected"
+                : `${steepMinutes} ${steepMinutes === 1 ? "minute" : "minutes"}`}
             </strong>
           </p>
         </div>
@@ -179,9 +239,11 @@ export default function CozyTeaCornerPage() {
         <button
           type="button"
           onClick={handleBrew}
-          className="w-full cursor-pointer rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:outline-none"
+          disabled={!canBrew}
+          aria-disabled={isBrewing ? true : undefined}
+          className="w-full cursor-pointer rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
         >
-          Brew Tea
+          {isBrewing ? "Brewing..." : "Brew Tea"}
         </button>
 
         <button
@@ -193,6 +255,11 @@ export default function CozyTeaCornerPage() {
         </button>
 
         <div aria-live="polite" aria-atomic="true">
+          {isBrewing && (
+            <p className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-5 text-center font-medium text-primary">
+              🍵 Brewing Mochi&apos;s sencha...
+            </p>
+          )}
           {brewResult && (
             <section
               className={`flex flex-col gap-4 rounded-2xl border p-5 shadow-sm sm:p-6 ${
@@ -228,6 +295,23 @@ export default function CozyTeaCornerPage() {
                   <strong className="capitalize">{brewResult.flavor}</strong>
                 </p>
               </div>
+
+              {temperature !== null && steepMinutes !== null && (
+                <div className="flex flex-col gap-2 rounded-xl border border-border/70 bg-surface/80 px-4 py-4">
+                  <h3 className="font-semibold text-primary">
+                    🍃 How do brewing choices affect flavor?
+                  </h3>
+
+                  <p className="text-sm leading-6 text-foreground/80">
+                    {explainSenchaBrew(temperature, steepMinutes)}
+                  </p>
+
+                  <p className="text-xs leading-5 text-foreground/65">
+                    These are general brewing tendencies. Actual tea flavors
+                    vary depending on the tea leaves and brewing conditions.
+                  </p>
+                </div>
+              )}
             </section>
           )}
         </div>

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   celsiusToFahrenheit,
   evaluateSenchaBrew,
+  explainSenchaBrew,
   fahrenheitToCelsius,
 } from "./cozy-tea";
 
@@ -63,4 +64,26 @@ describe("temperature conversion round trip", () => {
 
     expect(convertedBack).toBeCloseTo(originalCelsius);
   });
+});
+
+describe("explainSenchaBrew", () => {
+  it.each([
+    [70, 1, "one-minute"],
+    [70, 3, "Three minutes"],
+    [70, 5, "Five minutes"],
+    [85, 1, "one-minute"],
+    [85, 3, "Three minutes"],
+    [85, 5, "Five minutes"],
+    [100, 1, "one-minute"],
+    [100, 3, "Three minutes"],
+    [100, 5, "Five minutes"],
+  ] as const)(
+    "explains %i°C for %i minute(s)",
+    (temperature, steepMinutes, expectedSteepDescription) => {
+      const explanation = explainSenchaBrew(temperature, steepMinutes);
+
+      expect(explanation).toContain(`${temperature}°C`);
+      expect(explanation).toContain(expectedSteepDescription);
+    },
+  );
 });

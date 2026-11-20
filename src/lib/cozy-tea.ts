@@ -23,19 +23,43 @@ export const SENCHA_MATCH_FEEDBACK: Record<
   { title: string; description: string }
 > = {
   ideal: {
-    title: "A lovely cup!",
-    description: "Gentle and balanced — just right for this sencha recipe.",
+    title: "Mochi is delighted!",
+    description:
+      "Mochi smiles happily. This cup is gentle and balanced — just what she wanted!",
   },
   close: {
-    title: "A cozy variation!",
-    description: "Not quite the target brew, but a fun variation to explore.",
+    title: "Mochi enjoys the variation!",
+    description:
+      "This tastes a little different from Mochi's usual gentle cup, but she appreciates the variation.",
   },
   different: {
-    title: "A bold experiment!",
+    title: "Mochi looks surprised!",
     description:
-      "This brew takes a different path. Try another temperature or steeping time!",
+      "This brew is quite different from the smooth, gentle sencha Mochi requested. She would love to try another preparation!",
   },
 };
+
+const TEMPERATURE_EXPLANATIONS: Record<SenchaTemperature, string> = {
+  70: "At 70°C, cooler water tends to produce a mellow cup with less astringency.",
+  85: "At 85°C, hotter water can extract more astringent compounds, giving the tea a sharper edge.",
+  100: "At 100°C, boiling water can bring out bitterness and astringency quickly.",
+};
+
+const STEEPING_EXPLANATIONS: Record<SenchaSteepMinutes, string> = {
+  1: "A one-minute steep keeps the extraction relatively brief.",
+  3: "Three minutes allows more flavor and astringency to develop.",
+  5: "Five minutes can make the resulting brew much more intense.",
+};
+
+export function explainSenchaBrew(
+  temperature: SenchaTemperature,
+  steepMinutes: SenchaSteepMinutes,
+): string {
+  return [
+    TEMPERATURE_EXPLANATIONS[temperature],
+    STEEPING_EXPLANATIONS[steepMinutes],
+  ].join(" ");
+}
 
 type BrewKey = `${SenchaTemperature}-${SenchaSteepMinutes}`;
 
