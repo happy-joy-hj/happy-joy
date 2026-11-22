@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import {
   SENCHA_MATCH_FEEDBACK,
@@ -70,6 +70,8 @@ export default function CozyTeaCornerPage() {
   const brewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const preparationNavRef = useRef<HTMLButtonElement>(null);
   const resultNavRef = useRef<HTMLButtonElement>(null);
+  const brewButtonRef = useRef<HTMLButtonElement>(null);
+  const scrollAfterNewCupRef = useRef(false);
 
   function handleBrew() {
     if (
@@ -109,6 +111,7 @@ export default function CozyTeaCornerPage() {
       brewTimerRef.current = null;
     }
 
+    scrollAfterNewCupRef.current = true;
     setView("preparation");
   }
 
@@ -125,23 +128,50 @@ export default function CozyTeaCornerPage() {
       return;
     }
 
-    if (view === "preparation") {
-      preparationNavRef.current?.focus();
-    } else if (view === "result") {
-      resultNavRef.current?.focus();
-    }
+    const activeNav =
+      view === "preparation" ? preparationNavRef.current : resultNavRef.current;
+
+    activeNav?.focus({ preventScroll: true });
   }, [view, completedBrew]);
+
+  useLayoutEffect(() => {
+    if (view !== "preparation" || !scrollAfterNewCupRef.current) {
+      return;
+    }
+
+    scrollAfterNewCupRef.current = false;
+
+    const isShortMobile = window.matchMedia(
+      "(max-width: 639px) and (max-height: 760px)",
+    ).matches;
+
+    if (!isShortMobile) {
+      return;
+    }
+
+    brewButtonRef.current?.scrollIntoView({
+      behavior: "auto",
+      block: "end",
+    });
+  }, [view]);
+
+  const mochiHeading =
+    view === "brewing"
+      ? "Mochi is waiting for her tea..."
+      : completedBrew
+        ? SENCHA_MATCH_FEEDBACK[completedBrew.result.match].title
+        : "Mochi's order";
 
   return (
     <section className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <h1 className="text-center text-3xl text-primary">Cozy Tea Corner</h1>
 
-      <p className="text-center text-foreground/75">
+      <p className="hidden text-center text-foreground/75 sm:block">
         Take a little break and brew a cozy cup of sencha for Mochi.
       </p>
 
       <div className="grid grid-cols-1 items-start gap-6 rounded-3xl border border-border bg-gradient-to-br from-surface to-surface-muted/80 p-5 shadow-sm sm:p-7 lg:grid-cols-2">
-        <div className="flex min-w-0 flex-col items-center gap-3 rounded-2xl border border-primary/10 bg-primary/5 px-5 py-6 text-center lg:col-start-1 lg:row-start-1">
+        <div className="hidden min-w-0 flex-col items-center gap-3 rounded-2xl border border-primary/10 bg-primary/5 px-5 py-6 text-center lg:col-start-1 lg:row-start-1 lg:flex">
           <div
             aria-hidden="true"
             className="flex size-24 items-center justify-center rounded-full bg-surface text-6xl shadow-sm"
@@ -149,7 +179,7 @@ export default function CozyTeaCornerPage() {
             🍵
           </div>
 
-          <p className="font-semibold text-primary">Mochi&apos;s order</p>
+          <p className="font-semibold text-primary">{mochiHeading}</p>
 
           <p className="max-w-md text-sm text-foreground/75">
             One cup of sencha, please! I&apos;d love a smooth, gentle green tea
@@ -157,6 +187,28 @@ export default function CozyTeaCornerPage() {
           </p>
         </div>
         <div className="min-w-0 lg:col-start-2 lg:row-start-1">
+          <div className="sticky top-24 z-10 mb-4 flex items-center gap-3 rounded-xl border border-primary/20 bg-surface/95 px-3 py-2 shadow-sm backdrop-blur lg:hidden">
+            <span
+              aria-hidden="true"
+              className="flex size-14 shrink-0 items-center justify-center rounded-full bg-surface-muted text-4xl"
+            >
+              🍵
+            </span>
+
+            <div className="min-w-0">
+              <p className="text-sm leading-5 font-semibold text-primary">
+                {mochiHeading}
+              </p>
+
+              <p className="text-xs leading-5 text-foreground/75">
+                {view === "brewing"
+                  ? "Waiting to taste the tea..."
+                  : completedBrew
+                    ? "Ready for another cup."
+                    : "Gentle sencha, please—not too bitter."}
+              </p>
+            </div>
+          </div>
           {completedBrew && view !== "brewing" && (
             <div
               role="group"
@@ -168,7 +220,7 @@ export default function CozyTeaCornerPage() {
                 type="button"
                 aria-pressed={view === "preparation"}
                 onClick={() => setView("preparation")}
-                className={`cursor-pointer rounded-xl px-3 py-3 font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none ${
+                className={`cursor-pointer scroll-mt-24 rounded-xl px-3 py-3 font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none ${
                   view === "preparation"
                     ? "bg-primary text-primary-foreground"
                     : "bg-surface text-primary ring-1 ring-border ring-inset hover:bg-surface-muted"
@@ -182,7 +234,7 @@ export default function CozyTeaCornerPage() {
                 type="button"
                 aria-pressed={view === "result"}
                 onClick={() => setView("result")}
-                className={`cursor-pointer rounded-xl px-3 py-3 font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none ${
+                className={`cursor-pointer scroll-mt-24 rounded-xl px-3 py-3 font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none ${
                   view === "result"
                     ? "bg-primary text-primary-foreground"
                     : "bg-surface text-primary ring-1 ring-border ring-inset hover:bg-surface-muted"
@@ -192,6 +244,13 @@ export default function CozyTeaCornerPage() {
               </button>
             </div>
           )}
+          <p role="status" aria-atomic="true" className="sr-only">
+            {isBrewing
+              ? "Brewing Mochi's sencha..."
+              : completedBrew
+                ? `Brewing complete. ${SENCHA_MATCH_FEEDBACK[completedBrew.result.match].title}`
+                : ""}
+          </p>
           {view === "preparation" && (
             <div className="flex flex-col gap-4">
               <details className="rounded-2xl border border-border bg-surface/80 px-4 py-4">
@@ -208,25 +267,31 @@ export default function CozyTeaCornerPage() {
                 </p>
               </details>
 
-              <fieldset className="flex flex-col gap-3">
-                <legend className="mb-3 font-semibold">Temperature unit</legend>
+              <fieldset>
+                <legend className="sr-only">Temperature unit</legend>
 
-                <div className="flex gap-2">
-                  {(["C", "F"] as const).map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      aria-pressed={unit === option}
-                      onClick={() => setUnit(option)}
-                      className={`cursor-pointer rounded-lg px-4 py-2 focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
-                        unit === option
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-surface-muted text-foreground"
-                      }`}
-                    >
-                      °{option}
-                    </button>
-                  ))}
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <span aria-hidden="true" className="text-base font-semibold">
+                    Temperature unit
+                  </span>
+
+                  <div className="flex gap-2">
+                    {(["C", "F"] as const).map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        aria-pressed={unit === option}
+                        onClick={() => setUnit(option)}
+                        className={`cursor-pointer rounded-lg px-4 py-2 focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none ${
+                          unit === option
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-surface-muted text-foreground"
+                        }`}
+                      >
+                        °{option}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </fieldset>
 
@@ -281,16 +346,17 @@ export default function CozyTeaCornerPage() {
                 </div>
               </fieldset>
               <button
+                ref={brewButtonRef}
                 type="button"
                 onClick={handleBrew}
                 disabled={!canBrew}
-                className="w-full cursor-pointer rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full cursor-pointer scroll-mb-6 rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Brew Tea
               </button>
             </div>
           )}
-          <div aria-live="polite" aria-atomic="true">
+          <div>
             {isBrewing && (
               <p className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-5 text-center font-medium text-primary">
                 🍵 Brewing Mochi&apos;s sencha...
