@@ -253,7 +253,7 @@ export default function CozyTeaCornerPage() {
           </p>
           {view === "preparation" && (
             <div className="flex flex-col gap-4">
-              <details className="rounded-2xl border border-border bg-surface/80 px-4 py-4">
+              <details className="rounded-2xl border border-[#ECD9B9] bg-[#FFF1DB] px-4 py-4">
                 <summary className="cursor-pointer font-semibold text-primary focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none">
                   💡 Need a brewing hint?
                 </summary>
@@ -350,7 +350,7 @@ export default function CozyTeaCornerPage() {
                 type="button"
                 onClick={handleBrew}
                 disabled={!canBrew}
-                className="w-full cursor-pointer scroll-mb-6 rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full cursor-pointer scroll-mb-6 rounded-xl bg-[#295F53] px-5 py-3 font-semibold text-white transition-[filter,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:outline-none enabled:hover:shadow-sm enabled:hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Brew Tea
               </button>
@@ -358,9 +358,24 @@ export default function CozyTeaCornerPage() {
           )}
           <div>
             {isBrewing && (
-              <p className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-5 text-center font-medium text-primary">
-                🍵 Brewing Mochi&apos;s sencha...
-              </p>
+              <div className="flex min-h-44 flex-col items-center justify-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-5 py-6 text-center">
+                <span
+                  aria-hidden="true"
+                  className="flex size-14 items-center justify-center rounded-full bg-surface text-4xl shadow-sm"
+                >
+                  🍵
+                </span>
+
+                <div className="flex flex-col gap-1">
+                  <p className="font-semibold text-primary">
+                    Brewing Mochi&apos;s sencha...
+                  </p>
+
+                  <p className="text-sm text-foreground/70">
+                    A cozy cup is on its way!
+                  </p>
+                </div>
+              </div>
             )}
             {view === "result" && completedBrew && (
               <section
@@ -438,7 +453,7 @@ export default function CozyTeaCornerPage() {
                 <button
                   type="button"
                   onClick={handleNewCup}
-                  className="w-full cursor-pointer rounded-xl border border-border bg-surface px-5 py-3 font-semibold text-primary transition hover:bg-surface-muted focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:outline-none"
+                  className="w-full cursor-pointer rounded-xl bg-[#295F53] px-5 py-3 font-semibold text-white transition-[filter,box-shadow] duration-150 hover:shadow-sm hover:brightness-95 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface focus-visible:outline-none"
                 >
                   New Cup
                 </button>
