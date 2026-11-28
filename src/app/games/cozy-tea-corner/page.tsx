@@ -254,7 +254,7 @@ export default function CozyTeaCornerPage() {
           {view === "preparation" && (
             <div className="flex flex-col gap-4">
               <details className="rounded-2xl border border-[#ECD9B9] bg-[#FFF1DB] px-4 py-4">
-                <summary className="cursor-pointer font-semibold text-primary focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none">
+                <summary className="cursor-pointer font-semibold text-[#295F53] focus-visible:ring-2 focus-visible:ring-focus focus-visible:outline-none">
                   💡 Need a brewing hint?
                 </summary>
 
